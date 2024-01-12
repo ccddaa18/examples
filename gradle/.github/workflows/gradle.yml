@@ -1,0 +1,38 @@
+name: Build Gradle sample
+
+on:
+  push:
+    branches:
+    - master
+#  pull_request:
+#    - master
+#    paths:
+#    - gradle/**
+
+env:
+  LAUNCHABLE_ORGANIZATION: 'sample'
+  LAUNCHABLE_WORKSPACE: 'local-unit-test'
+  LAUNCHABLE_TOKEN: 'v1:sample/local-unit-test:834345aae3354f50b54c33771cd033d0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4.0.0
+        with:
+          java-version: "17"
+          distribution: "oracle"
+      - name: Full build
+        run: |
+          cd gradle
+          ./ci.sh
+
+      - name: Run tests with Gradle and Launchable
+        if: always()
+        run: ./pre-merge.sh
+        working-directory: ./gradle
+        env:
+          GITHUB_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
